@@ -1,520 +1,960 @@
-"use strict";
+/*================================================
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+Polyfill
 
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+================================================*/
 
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+(function(){ 'use strict';
 
-document.addEventListener('DOMContentLoaded', function () {
-  'use strict';
-  /* function testWebP(callback) {
-  var webP = new Image();
-  webP.onload = webP.onerror = function () {
-  callback(webP.height == 2);
+  /*================================================
+
+  Request Animation Frame
+
+  ================================================*/
+  
+  var lastTime = 0;
+  var vendors = [ 'webkit', 'moz' ];
+  for( var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x ) {
+    window.requestAnimationFrame = window[ vendors[ x ] + 'RequestAnimationFrame' ];
+    window.cancelAnimationFrame = window[ vendors[ x ] + 'CancelAnimationFrame' ] || window[ vendors[ x ] + 'CancelRequestAnimationFrame' ];
+  }
+
+  if( !window.requestAnimationFrame ) {
+    window.requestAnimationFrame = function( callback, element ) {
+      var currTime = new Date().getTime();
+      var timeToCall = Math.max( 0, 16 - ( currTime - lastTime ) );
+      var id = window.setTimeout(
+        function() { 
+          callback( currTime + timeToCall ); 
+        }, timeToCall );
+      lastTime = currTime + timeToCall;
+      return id;
+    }
+  }
+
+  if( !window.cancelAnimationFrame ) {
+    window.cancelAnimationFrame = function( id ) {
+      clearTimeout( id );
+    }
+  }
+
+})();
+
+/*================================================
+
+DOM Manipulation
+
+================================================*/
+
+(function(){ 'use strict';
+
+  function hasClass( elem, className ) {
+    return new RegExp( ' ' + className + ' ' ).test( ' ' + elem.className + ' ' );
   };
-  webP.src = "data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACyAgCdASoCAAIALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0PP8bA//LwYAAA";
-  }
-  testWebP(function (support) {
-  if (support == true) {
-  document.querySelector('body').classList.add('webp');
-  }else{
-  document.querySelector('body').classList.add('no-webp');
-  }
-  });*/
 
-  feather.replace();
+  function addClass( elem, className ) {
+    if( !hasClass(elem, className ) ) {
+      elem.className += ' ' + className;
+    }
+  };
 
-  (function () {
-    var sidebar = document.querySelector('.sidebar'),
-        catSubMenu = document.querySelector('.cat-sub-menu'),
-        sidebarBtns = document.querySelectorAll('.sidebar-toggle');
-
-    var _iterator = _createForOfIteratorHelper(sidebarBtns),
-        _step;
-
-    try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var sidebarBtn = _step.value;
-
-        if (sidebarBtn && catSubMenu && sidebarBtn) {
-          sidebarBtn.addEventListener('click', function () {
-            var _iterator2 = _createForOfIteratorHelper(sidebarBtns),
-                _step2;
-
-            try {
-              for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-                var sdbrBtn = _step2.value;
-                sdbrBtn.classList.toggle('rotated');
-              }
-            } catch (err) {
-              _iterator2.e(err);
-            } finally {
-              _iterator2.f();
-            }
-
-            sidebar.classList.toggle('hidden');
-            catSubMenu.classList.remove('visible');
-          });
-        }
+  function removeClass( elem, className ) {
+    var newClass = ' ' + elem.className.replace( /[\t\r\n]/g, ' ' ) + ' ';
+    if( hasClass( elem, className ) ) {
+      while( newClass.indexOf(' ' + className + ' ' ) >= 0 ) {
+        newClass = newClass.replace( ' ' + className + ' ', ' ' );
       }
-    } catch (err) {
-      _iterator.e(err);
-    } finally {
-      _iterator.f();
+      elem.className = newClass.replace( /^\s+|\s+$/g, '' );
     }
-  })();
+  };
 
-  (function () {
-    var showCatBtns = document.querySelectorAll('.show-cat-btn');
-
-    if (showCatBtns) {
-      showCatBtns.forEach(function (showCatBtn) {
-        var catSubMenu = showCatBtn.nextElementSibling;
-        showCatBtn.addEventListener('click', function (e) {
-          e.preventDefault();
-          catSubMenu.classList.toggle('visible');
-          var catBtnToRotate = document.querySelector('.category__btn');
-          catBtnToRotate.classList.toggle('rotated');
-        });
-      });
-    }
-  })();
-
-  (function () {
-    var showMenu = document.querySelector('.lang-switcher');
-    var langMenu = document.querySelector('.lang-menu');
-    var layer = document.querySelector('.layer');
-
-    if (showMenu) {
-      showMenu.addEventListener('click', function () {
-        langMenu.classList.add('active');
-        layer.classList.add('active');
-      });
-
-      if (layer) {
-        layer.addEventListener('click', function (e) {
-          if (langMenu.classList.contains('active')) {
-            langMenu.classList.remove('active');
-            layer.classList.remove('active');
-          }
-        });
+  function toggleClass( elem, className ) {
+    var newClass = ' ' + elem.className.replace( /[\t\r\n]/g, ' ' ) + ' ';
+    if( hasClass(elem, className ) ) {
+      while( newClass.indexOf( ' ' + className + ' ' ) >= 0 ) {
+        newClass = newClass.replace( ' ' + className + ' ' , ' ' );
       }
-    }
-  })();
-
-  (function () {
-    var userDdBtnList = document.querySelectorAll('.dropdown-btn');
-    var userDdList = document.querySelectorAll('.users-item-dropdown');
-    var layer = document.querySelector('.layer');
-
-    if (userDdList && userDdBtnList) {
-      var _iterator3 = _createForOfIteratorHelper(userDdBtnList),
-          _step3;
-
-      try {
-        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-          var userDdBtn = _step3.value;
-          userDdBtn.addEventListener('click', function (e) {
-            layer.classList.add('active');
-
-            var _iterator4 = _createForOfIteratorHelper(userDdList),
-                _step4;
-
-            try {
-              for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-                var userDd = _step4.value;
-
-                if (e.currentTarget.nextElementSibling == userDd) {
-                  if (userDd.classList.contains('active')) {
-                    userDd.classList.remove('active');
-                  } else {
-                    userDd.classList.add('active');
-                  }
-                } else {
-                  userDd.classList.remove('active');
-                }
-              }
-            } catch (err) {
-              _iterator4.e(err);
-            } finally {
-              _iterator4.f();
-            }
-          });
-        }
-      } catch (err) {
-        _iterator3.e(err);
-      } finally {
-        _iterator3.f();
-      }
-    }
-
-    if (layer) {
-      layer.addEventListener('click', function (e) {
-        var _iterator5 = _createForOfIteratorHelper(userDdList),
-            _step5;
-
-        try {
-          for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-            var userDd = _step5.value;
-
-            if (userDd.classList.contains('active')) {
-              userDd.classList.remove('active');
-              layer.classList.remove('active');
-            }
-          }
-        } catch (err) {
-          _iterator5.e(err);
-        } finally {
-          _iterator5.f();
-        }
-      });
-    }
-  })();
-
-  (function () {
-    Chart.defaults.backgroundColor = '#000';
-    var darkMode = localStorage.getItem('darkMode');
-    var darkModeToggle = document.querySelector('.theme-switcher');
-
-    var enableDarkMode = function enableDarkMode() {
-      document.body.classList.add('darkmode');
-      localStorage.setItem('darkMode', 'enabled');
-    };
-
-    var disableDarkMode = function disableDarkMode() {
-      document.body.classList.remove('darkmode');
-      localStorage.setItem('darkMode', null);
-    };
-
-    if (darkMode === 'enabled') {
-      enableDarkMode();
-    }
-
-    if (darkModeToggle) {
-      darkModeToggle.addEventListener('click', function () {
-        darkMode = localStorage.getItem('darkMode');
-
-        if (darkMode !== 'enabled') {
-          enableDarkMode();
-        } else {
-          disableDarkMode();
-        }
-
-        addData();
-      });
-    }
-  })();
-
-  (function () {
-    var checkAll = document.querySelector('.check-all');
-    var checkers = document.querySelectorAll('.check');
-
-    if (checkAll && checkers) {
-      checkAll.addEventListener('change', function (e) {
-        var _iterator6 = _createForOfIteratorHelper(checkers),
-            _step6;
-
-        try {
-          for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-            var checker = _step6.value;
-
-            if (checkAll.checked) {
-              checker.checked = true;
-              checker.parentElement.parentElement.parentElement.classList.add('active');
-            } else {
-              checker.checked = false;
-              checker.parentElement.parentElement.parentElement.classList.remove('active');
-            }
-          }
-        } catch (err) {
-          _iterator6.e(err);
-        } finally {
-          _iterator6.f();
-        }
-      });
-
-      var _iterator7 = _createForOfIteratorHelper(checkers),
-          _step7;
-
-      try {
-        var _loop = function _loop() {
-          var checker = _step7.value;
-          checker.addEventListener('change', function (e) {
-            checker.parentElement.parentElement.parentElement.classList.toggle('active');
-
-            if (!checker.checked) {
-              checkAll.checked = false;
-            }
-
-            var totalCheckbox = document.querySelectorAll('.users-table .check');
-            var totalChecked = document.querySelectorAll('.users-table .check:checked');
-
-            if (totalCheckbox && totalChecked) {
-              if (totalCheckbox.length == totalChecked.length) {
-                checkAll.checked = true;
-              } else {
-                checkAll.checked = false;
-              }
-            }
-          });
-        };
-
-        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-          _loop();
-        }
-      } catch (err) {
-        _iterator7.e(err);
-      } finally {
-        _iterator7.f();
-      }
-    }
-  })();
-
-  (function () {
-    var checkAll = document.querySelector('.check-all');
-    var checkers = document.querySelectorAll('.check');
-    var checkedSum = document.querySelector('.checked-sum');
-
-    if (checkedSum && checkAll && checkers) {
-      checkAll.addEventListener('change', function (e) {
-        var totalChecked = document.querySelectorAll('.users-table .check:checked');
-        checkedSum.textContent = totalChecked.length;
-      });
-
-      var _iterator8 = _createForOfIteratorHelper(checkers),
-          _step8;
-
-      try {
-        for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-          var checker = _step8.value;
-          checker.addEventListener('change', function (e) {
-            var totalChecked = document.querySelectorAll('.users-table .check:checked');
-            checkedSum.textContent = totalChecked.length;
-          });
-        }
-      } catch (err) {
-        _iterator8.e(err);
-      } finally {
-        _iterator8.f();
-      }
-    }
-  })();
-
-  var charts = {};
-  var gridLine;
-  var titleColor;
-
-  (function () {
-    /* Add gradient to chart */
-    var width, height, gradient;
-
-    function getGradient(ctx, chartArea) {
-      var chartWidth = chartArea.right - chartArea.left;
-      var chartHeight = chartArea.bottom - chartArea.top;
-
-      if (gradient === null || width !== chartWidth || height !== chartHeight) {
-        width = chartWidth;
-        height = chartHeight;
-        gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-        gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
-        gradient.addColorStop(1, 'rgba(255, 255, 255, 0.4)');
-      }
-
-      return gradient;
-    }
-    /* Visitors chart */
-
-
-    var ctx = document.getElementById('myChart');
-
-    if (ctx) {
-      var myCanvas = ctx.getContext('2d');
-      var myChart = new Chart(myCanvas, {
-        type: 'line',
-        data: {
-          labels: ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-          datasets: [{
-            label: 'Last 6 months',
-            data: [35, 27, 40, 15, 30, 25, 45],
-            cubicInterpolationMode: 'monotone',
-            tension: 0.4,
-            backgroundColor: ['rgba(95, 46, 234, 1)'],
-            borderColor: ['rgba(95, 46, 234, 1)'],
-            borderWidth: 2
-          }, {
-            label: 'Previous',
-            data: [20, 36, 16, 45, 29, 32, 10],
-            cubicInterpolationMode: 'monotone',
-            tension: 0.4,
-            backgroundColor: ['rgba(75, 222, 151, 1)'],
-            borderColor: ['rgba(75, 222, 151, 1)'],
-            borderWidth: 2
-          }]
-        },
-        options: {
-          scales: {
-            y: {
-              min: 0,
-              max: 100,
-              ticks: {
-                stepSize: 25
-              },
-              grid: {
-                display: false
-              }
-            },
-            x: {
-              grid: {
-                color: gridLine
-              }
-            }
-          },
-          elements: {
-            point: {
-              radius: 2
-            }
-          },
-          plugins: {
-            legend: {
-              position: 'top',
-              align: 'end',
-              labels: {
-                boxWidth: 8,
-                boxHeight: 8,
-                usePointStyle: true,
-                font: {
-                  size: 12,
-                  weight: '500'
-                }
-              }
-            },
-            title: {
-              display: true,
-              text: ['Visitor statistics', 'Nov - July'],
-              align: 'start',
-              color: '#171717',
-              font: {
-                size: 16,
-                family: 'Inter',
-                weight: '600',
-                lineHeight: 1.4
-              }
-            }
-          },
-          tooltips: {
-            mode: 'index',
-            intersect: false
-          },
-          hover: {
-            mode: 'nearest',
-            intersect: true
-          }
-        }
-      });
-      charts.visitors = myChart;
-    }
-    /* Customers chart */
-
-
-    var customersChart = document.getElementById('customersChart');
-
-    if (customersChart) {
-      var customersChartCanvas = customersChart.getContext('2d');
-      var myCustomersChart = new Chart(customersChartCanvas, {
-        type: 'line',
-        data: {
-          labels: ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-          datasets: [{
-            label: '+958',
-            data: [90, 10, 80, 20, 70, 30, 50],
-            tension: 0.4,
-            backgroundColor: function backgroundColor(context) {
-              var chart = context.chart;
-              var ctx = chart.ctx,
-                  chartArea = chart.chartArea;
-
-              if (!chartArea) {
-                // This case happens on initial chart load
-                return null;
-              }
-
-              return getGradient(ctx, chartArea);
-            },
-            borderColor: ['#fff'],
-            borderWidth: 2,
-            fill: true
-          }]
-        },
-        options: {
-          scales: {
-            y: {
-              display: false
-            },
-            x: {
-              display: false
-            }
-          },
-          elements: {
-            point: {
-              radius: 1
-            }
-          },
-          plugins: {
-            legend: {
-              position: 'top',
-              align: 'end',
-              labels: {
-                color: '#fff',
-                size: 18,
-                fontStyle: 800,
-                boxWidth: 0
-              }
-            },
-            title: {
-              display: true,
-              text: ['New Customers', '28 Daily Avg.'],
-              align: 'start',
-              color: '#fff',
-              font: {
-                size: 16,
-                family: 'Inter',
-                weight: '600',
-                lineHeight: 1.4
-              },
-              padding: {
-                top: 20
-              }
-            }
-          },
-          maintainAspectRatio: false
-        }
-      });
-      customersChart.customers = myCustomersChart;
-    }
-  })();
-  /* Change data of all charts */
-
-
-  function addData() {
-    var darkMode = localStorage.getItem('darkMode');
-
-    if (darkMode === 'enabled') {
-      gridLine = '#37374F';
-      titleColor = '#EFF0F6';
+      elem.className = newClass.replace( /^\s+|\s+$/g, '' );
     } else {
-      gridLine = '#EEEEEE';
-      titleColor = '#171717';
+      elem.className += ' ' + className;
     }
+  };
 
-    if (charts.hasOwnProperty('visitors')) {
-      charts.visitors.options.scales.x.grid.color = gridLine;
-      charts.visitors.options.plugins.title.color = titleColor;
-      charts.visitors.options.scales.y.ticks.color = titleColor;
-      charts.visitors.options.scales.x.ticks.color = titleColor;
-      charts.visitors.update();
+})();
+
+/*================================================
+
+Core
+
+================================================*/
+
+g = {};
+
+(function(){ 'use strict';
+
+  /*================================================
+
+  Math
+
+  ================================================*/
+
+  g.m = Math;
+  g.mathProps = 'E LN10 LN2 LOG2E LOG10E PI SQRT1_2 SQRT2 abs acos asin atan ceil cos exp floor log round sin sqrt tan atan2 pow max min'.split( ' ' );
+  for ( var i = 0; i < g.mathProps.length; i++ ) {
+    g[ g.mathProps[ i ] ] = g.m[ g.mathProps[ i ] ];
+  }
+  g.m.TWO_PI = g.m.PI * 2;
+
+  /*================================================
+
+  Miscellaneous
+
+  ================================================*/
+
+  g.isset = function( prop ) {
+    return typeof prop != 'undefined';
+  };
+
+  g.log = function() {
+    if( g.isset( g.config ) && g.config.debug && window.console ){
+      console.log( Array.prototype.slice.call( arguments ) );
     }
+  };
+
+})();
+
+/*================================================
+
+Group
+
+================================================*/
+
+(function(){ 'use strict';
+
+  g.Group = function() {
+    this.collection = [];
+    this.length = 0;
+  };
+
+  g.Group.prototype.add = function( item ) {
+    this.collection.push( item );
+    this.length++;
+  };
+
+  g.Group.prototype.remove = function( index ) {
+    if( index < this.length ) {
+      this.collection.splice( index, 1 );
+      this.length--;
+    }
+  };
+
+  g.Group.prototype.empty = function() {
+    this.collection.length = 0;
+    this.length = 0;
+  };
+
+  g.Group.prototype.each = function( action, asc ) {
+    var asc = asc || 0,
+      i;
+    if( asc ) {
+      for( i = 0; i < this.length; i++ ) {
+        this.collection[ i ][ action ]( i );
+      }
+    } else {
+      i = this.length;
+      while( i-- ) {
+        this.collection[ i ][ action ]( i );
+      }
+    }
+  };
+
+})();
+
+/*================================================
+
+Utilities
+
+================================================*/
+
+(function(){ 'use strict';
+
+  g.util = {};
+
+  /*================================================
+
+  Random
+
+  ================================================*/
+  
+  g.util.rand = function( min, max ) {
+    return g.m.random() * ( max - min ) + min;
+  };
+
+  g.util.randInt = function( min, max ) {
+    return g.m.floor( g.m.random() * ( max - min + 1) ) + min;
+  };
+
+}());
+
+/*================================================
+
+State
+
+================================================*/
+
+(function(){ 'use strict';
+
+  g.states = {};
+
+  g.addState = function( state ) {
+    g.states[ state.name ] = state;
+  };
+
+  g.setState = function( name ) {
+    if( g.state ) {
+      g.states[ g.state ].exit();
+    }
+    g.state = name;
+    g.states[ g.state ].init();
+  };
+
+  g.currentState = function() {
+    return g.states[ g.state ];
+  };
+
+}());
+
+/*================================================
+
+Time
+
+================================================*/
+
+(function(){ 'use strict';
+
+  g.Time = function() {
+    this.reset();
   }
 
-  addData();
-});
+  g.Time.prototype.reset = function() {
+    this.now = Date.now();
+    this.last = Date.now();
+    this.delta = 60;
+    this.ndelta = 1;
+    this.elapsed = 0;
+    this.nelapsed = 0;
+    this.tick = 0;
+  };
+
+  g.Time.prototype.update = function() {
+    this.now = Date.now();
+    this.delta = this.now - this.last;
+    this.ndelta = Math.min( Math.max( this.delta / ( 1000 / 60 ), 0.0001 ), 10 );
+    this.elapsed += this.delta;
+    this.nelapsed += this.ndelta;
+    this.last = this.now;
+    this.tick++;
+  };
+
+})();
+
+/*================================================
+
+Grid Entity
+
+================================================*/
+
+(function(){ 'use strict';
+
+  g.Grid = function( cols, rows ) {
+    this.cols = cols;
+    this.rows = rows;
+    this.tiles = [];
+    for( var x = 0; x < cols; x++ ) {
+      this.tiles[ x ] = [];
+      for( var y = 0; y < rows; y++ ) {
+        this.tiles[ x ].push( 'empty' );
+      }
+    }
+  };
+
+  g.Grid.prototype.get = function( x, y ) {
+    return this.tiles[ x ][ y ];
+  };
+
+  g.Grid.prototype.set = function( x, y, val ) {
+    this.tiles[ x ][ y ] = val;
+  };
+
+})();
+
+/*================================================
+
+Board Tile Entity
+
+================================================*/
+
+(function(){ 'use strict';
+
+  g.BoardTile = function( opt ) {
+    this.parentState = opt.parentState;
+    this.parentGroup = opt.parentGroup;
+    this.col = opt.col;
+    this.row = opt.row;
+    this.x = opt.x;
+    this.y = opt.y;
+    this.z = 0;
+    this.w = opt.w;
+    this.h = opt.h;
+    this.elem = document.createElement( 'div' );
+    this.elem.style.position = 'absolute';
+    this.elem.className = 'tile';
+    this.parentState.stageElem.appendChild( this.elem );
+    this.classes = {
+      pressed: 0,
+      path: 0,
+      up: 0,
+      down: 0,
+      left: 0,
+      right: 0
+    }
+    this.updateDimensions();
+  };
+
+  g.BoardTile.prototype.update = function() {
+    for( var k in this.classes ) {
+      if( this.classes[ k ] ) {
+        this.classes[ k ]--;
+      }
+    }
+
+    if( this.parentState.food.tile.col == this.col || this.parentState.food.tile.row == this.row ) {
+      this.classes.path = 1;
+      if( this.col < this.parentState.food.tile.col ) {
+        this.classes.right = 1;
+      } else {
+        this.classes.right = 0;
+      }
+      if( this.col > this.parentState.food.tile.col ) {
+        this.classes.left = 1;
+      } else {
+        this.classes.left = 0;
+      }
+      if( this.row > this.parentState.food.tile.row ) {
+        this.classes.up = 1;
+      } else {
+        this.classes.up = 0;
+      }
+      if( this.row < this.parentState.food.tile.row ) {
+        this.classes.down = 1;
+      } else {
+        this.classes.down = 0;
+      }
+    } else {
+      this.classes.path = 0;
+    }
+
+    if( this.parentState.food.eaten ) {
+      this.classes.path = 0;
+    }
+  };
+
+  g.BoardTile.prototype.updateDimensions = function() {
+    this.x = this.col * this.parentState.tileWidth;
+    this.y = this.row * this.parentState.tileHeight;
+    this.w = this.parentState.tileWidth - this.parentState.spacing;
+    this.h = this.parentState.tileHeight - this.parentState.spacing;
+    this.elem.style.left = this.x + 'px';
+    this.elem.style.top = this.y + 'px';
+    this.elem.style.width = this.w + 'px';
+    this.elem.style.height = this.h + 'px';
+  };
+
+  g.BoardTile.prototype.render = function() {
+    var classString = '';
+    for( var k in this.classes ) {
+      if( this.classes[ k ] ) {
+        classString += k + ' ';
+      }
+    }
+    this.elem.className = 'tile ' + classString;
+  };
+
+})();
+
+/*================================================
+
+Snake Tile Entity
+
+================================================*/
+
+(function(){ 'use strict';
+
+  g.SnakeTile = function( opt ) {
+    this.parentState = opt.parentState;
+    this.parentGroup = opt.parentGroup;
+    this.col = opt.col;
+    this.row = opt.row;
+    this.x = opt.x;
+    this.y = opt.y;
+    this.w = opt.w;
+    this.h = opt.h;
+    this.color = null;
+    this.scale = 1;
+    this.rotation = 0;
+    this.blur = 0;
+    this.alpha = 1;
+    this.borderRadius = 0;
+    this.borderRadiusAmount = 0;
+    this.elem = document.createElement( 'div' );
+    this.elem.style.position = 'absolute';
+    this.parentState.stageElem.appendChild( this.elem );
+  };
+
+  g.SnakeTile.prototype.update = function( i ) {
+    this.x = this.col * this.parentState.tileWidth;
+    this.y = this.row * this.parentState.tileHeight;
+    if( i == 0 ) {
+      this.color = '#fff';
+      this.blur = this.parentState.dimAvg * 0.03 + Math.sin( this.parentState.time.elapsed / 200 ) * this.parentState.dimAvg * 0.015;
+      if( this.parentState.snake.dir == 'n' ) {
+        this.borderRadius = this.borderRadiusAmount + '% ' + this.borderRadiusAmount + '% 0 0';
+      } else if( this.parentState.snake.dir == 's' ) {
+        this.borderRadius = '0 0 ' + this.borderRadiusAmount + '% ' + this.borderRadiusAmount + '%';
+      } else if( this.parentState.snake.dir == 'e' ) {
+        this.borderRadius = '0 ' + this.borderRadiusAmount + '% ' + this.borderRadiusAmount + '% 0';
+      } else if( this.parentState.snake.dir == 'w' ) {
+        this.borderRadius = this.borderRadiusAmount + '% 0 0 ' + this.borderRadiusAmount + '%';
+      }
+    } else {
+      this.color = '#fff';
+      this.blur = 0;
+      this.borderRadius = '0';
+    }
+    this.alpha = 1 - ( i / this.parentState.snake.tiles.length ) * 0.6;
+    this.rotation = ( this.parentState.snake.justAteTick / this.parentState.snake.justAteTickMax ) * 90;
+    this.scale = 1 + ( this.parentState.snake.justAteTick / this.parentState.snake.justAteTickMax ) * 1;
+  };
+
+  g.SnakeTile.prototype.updateDimensions = function() {
+    this.w = this.parentState.tileWidth - this.parentState.spacing;
+    this.h = this.parentState.tileHeight - this.parentState.spacing;
+  };
+
+  g.SnakeTile.prototype.render = function( i ) {
+    this.elem.style.left = this.x + 'px';
+    this.elem.style.top = this.y + 'px';
+    this.elem.style.width = this.w + 'px';
+    this.elem.style.height = this.h + 'px';
+    this.elem.style.backgroundColor = 'rgba(255, 255, 255, ' + this.alpha + ')';
+    this.elem.style.boxShadow = '0 0 ' + this.blur + 'px #fff';
+    this.elem.style.borderRadius = this.borderRadius;
+  };
+
+})();
+
+/*================================================
+
+Food Tile Entity
+
+================================================*/
+
+(function(){ 'use strict';
+
+  g.FoodTile = function( opt ) {
+    this.parentState = opt.parentState;
+    this.parentGroup = opt.parentGroup;
+    this.col = opt.col;
+    this.row = opt.row;
+    this.x = opt.x;
+    this.y = opt.y;
+    this.w = opt.w;
+    this.h = opt.h;
+    this.blur = 0;
+    this.scale = 1;
+    this.hue = 100;
+    this.opacity = 0;
+    this.elem = document.createElement( 'div' );
+    this.elem.style.position = 'absolute';
+    this.parentState.stageElem.appendChild( this.elem );
+  };
+
+  g.FoodTile.prototype.update = function() {
+    this.x = this.col * this.parentState.tileWidth;
+    this.y = this.row * this.parentState.tileHeight;
+    this.blur = this.parentState.dimAvg * 0.03 + Math.sin( this.parentState.time.elapsed / 200 ) * this.parentState.dimAvg * 0.015;
+    this.scale = 0.8 + Math.sin( this.parentState.time.elapsed / 200 ) * 0.2;
+
+    if( this.parentState.food.birthTick || this.parentState.food.deathTick ) {
+      if( this.parentState.food.birthTick ) {
+        this.opacity = 1 - ( this.parentState.food.birthTick / 1 ) * 1;
+      } else {
+        this.opacity = ( this.parentState.food.deathTick / 1 ) * 1;
+      }
+    } else {
+      this.opacity = 1;
+    }
+  };
+
+  g.FoodTile.prototype.updateDimensions = function() {
+    this.w = this.parentState.tileWidth - this.parentState.spacing;
+    this.h = this.parentState.tileHeight - this.parentState.spacing;
+  };
+
+  g.FoodTile.prototype.render = function() {
+    this.elem.style.left = this.x + 'px';
+    this.elem.style.top = this.y + 'px';
+    this.elem.style.width = this.w + 'px';
+    this.elem.style.height = this.h + 'px';
+    this.elem.style[ 'transform' ] = 'translateZ(0) scale(' + this.scale + ')';
+    this.elem.style.backgroundColor = 'hsla(' + this.hue + ', 100%, 60%, 1)';
+    this.elem.style.boxShadow = '0 0 ' + this.blur + 'px hsla(' + this.hue + ', 100%, 60%, 1)';
+    this.elem.style.opacity = this.opacity;
+  };
+
+})();
+
+/*================================================
+
+Snake Entity
+
+================================================*/
+
+(function(){ 'use strict';
+
+  g.Snake = function( opt ) {
+    this.parentState = opt.parentState;
+    this.dir = 'e',
+    this.currDir = this.dir;
+    this.tiles = [];
+    for( var i = 0; i < 5; i++ ) {
+      this.tiles.push( new g.SnakeTile({
+        parentState: this.parentState,
+        parentGroup: this.tiles,
+        col: 8 - i,
+        row: 3,
+        x: ( 8 - i ) * opt.parentState.tileWidth,
+        y: 3 * opt.parentState.tileHeight,
+        w: opt.parentState.tileWidth - opt.parentState.spacing,
+        h: opt.parentState.tileHeight - opt.parentState.spacing
+      }));
+    }
+    this.last = 0;
+    this.updateTick = 10;
+    this.updateTickMax = this.updateTick;
+    this.updateTickLimit = 3;
+    this.updateTickChange = 0.2;
+    this.deathFlag = 0;
+    this.justAteTick = 0;
+    this.justAteTickMax = 1;
+    this.justAteTickChange = 0.05;
+
+    // sync data grid of the play state
+    var i = this.tiles.length;
+
+    while( i-- ) {
+      this.parentState.grid.set( this.tiles[ i ].col, this.tiles[ i ].row, 'snake' );
+    }
+  };
+
+  g.Snake.prototype.updateDimensions = function() {
+    var i = this.tiles.length;
+    while( i-- ) {
+      this.tiles[ i ].updateDimensions();
+    }
+  };
+
+  g.Snake.prototype.update = function() {
+    if( this.parentState.keys.up ) {
+      if( this.dir != 's' && this.dir != 'n' && this.currDir != 's' && this.currDir != 'n' ) {
+        this.dir = 'n';
+      }
+    } else if( this.parentState.keys.down) {
+      if( this.dir != 'n' && this.dir != 's' && this.currDir != 'n' && this.currDir != 's' ) {
+        this.dir = 's';
+      }
+    } else if( this.parentState.keys.right ) {
+      if( this.dir != 'w' && this.dir != 'e' && this.currDir != 'w' && this.currDir != 'e' ) {
+        this.dir = 'e';
+      }
+    } else if( this.parentState.keys.left ) {
+      if( this.dir != 'e' && this.dir != 'w' && this.currDir != 'e' && this.currDir != 'w' ) {
+        this.dir = 'w';
+      }
+    }
+
+    this.parentState.keys.up = 0;
+    this.parentState.keys.down = 0;
+    this.parentState.keys.right = 0;
+    this.parentState.keys.left = 0;
+
+    this.updateTick += this.parentState.time.ndelta;
+    if( this.updateTick >= this.updateTickMax ) {
+      // reset the update timer to 0, or whatever leftover there is
+      this.updateTick = ( this.updateTick - this.updateTickMax );
+
+      // rotate snake block array
+      this.tiles.unshift( new g.SnakeTile({
+        parentState: this.parentState,
+        parentGroup: this.tiles,
+        col: this.tiles[ 0 ].col,
+        row: this.tiles[ 0 ].row,
+        x: this.tiles[ 0 ].col * this.parentState.tileWidth,
+        y: this.tiles[ 0 ].row * this.parentState.tileHeight,
+        w: this.parentState.tileWidth - this.parentState.spacing,
+        h: this.parentState.tileHeight - this.parentState.spacing
+      }));
+      this.last = this.tiles.pop();
+      this.parentState.stageElem.removeChild( this.last.elem );
+
+      this.parentState.boardTiles.collection[ this.last.col + ( this.last.row * this.parentState.cols ) ].classes.pressed = 2;
+
+      // sync data grid of the play state
+      var i = this.tiles.length;
+
+      while( i-- ) {
+        this.parentState.grid.set( this.tiles[ i ].col, this.tiles[ i ].row, 'snake' );
+      }
+      this.parentState.grid.set( this.last.col, this.last.row, 'empty' );
+
+
+      // move the snake's head
+      if ( this.dir == 'n' ) {
+        this.currDir = 'n';
+        this.tiles[ 0 ].row -= 1;
+      } else if( this.dir == 's' ) {
+        this.currDir = 's';
+        this.tiles[ 0 ].row += 1;
+      } else if( this.dir == 'w' ) {
+        this.currDir = 'w';
+        this.tiles[ 0 ].col -= 1;
+      } else if( this.dir == 'e' ) {
+        this.currDir = 'e';
+        this.tiles[ 0 ].col += 1;
+      }
+
+      // wrap walls
+      this.wallFlag = false;
+      if( this.tiles[ 0 ].col >= this.parentState.cols ) {
+        this.tiles[ 0 ].col = 0;
+        this.wallFlag = true;
+      }
+      if( this.tiles[ 0 ].col < 0 ) {
+        this.tiles[ 0 ].col = this.parentState.cols - 1;
+        this.wallFlag = true;
+      }
+      if( this.tiles[ 0 ].row >= this.parentState.rows ) {
+        this.tiles[ 0 ].row = 0;
+        this.wallFlag = true;
+      }
+      if( this.tiles[ 0 ].row < 0 ) {
+        this.tiles[ 0 ].row = this.parentState.rows - 1;
+        this.wallFlag = true;
+      }
+
+      // check death by eating self
+      if( this.parentState.grid.get( this.tiles[ 0 ].col, this.tiles[ 0 ].row ) == 'snake' ) {
+        this.deathFlag = 1;
+        clearTimeout( this.foodCreateTimeout );
+      }
+
+      // check eating of food
+      if( this.parentState.grid.get( this.tiles[ 0 ].col, this.tiles[ 0 ].row ) == 'food' ) {
+        this.tiles.push( new g.SnakeTile({
+          parentState: this.parentState,
+          parentGroup: this.tiles,
+          col: this.last.col,
+          row: this.last.row,
+          x: this.last.col * this.parentState.tileWidth,
+          y: this.last.row * this.parentState.tileHeight,
+          w: this.parentState.tileWidth - this.parentState.spacing,
+          h: this.parentState.tileHeight - this.parentState.spacing
+        }));
+        if( this.updateTickMax - this.updateTickChange > this.updateTickLimit ) {
+          this.updateTickMax -= this.updateTickChange;
+        }
+        this.parentState.score++;
+        this.parentState.scoreElem.innerHTML = this.parentState.score;
+        this.justAteTick = this.justAteTickMax;
+
+        this.parentState.food.eaten = 1;
+        this.parentState.stageElem.removeChild( this.parentState.food.tile.elem );
+
+        var _this = this;
+        
+        this.foodCreateTimeout = setTimeout( function() {
+          _this.parentState.food = new g.Food({
+            parentState: _this.parentState
+          });
+        }, 300);
+      }
+
+      // check death by eating self
+      if( this.deathFlag ) {
+        g.setState( 'play' );
+      }
+    }
+
+    // update individual snake tiles
+    var i = this.tiles.length;
+    while( i-- ) {
+      this.tiles[ i ].update( i );
+    }
+
+    if( this.justAteTick > 0 ) {
+      this.justAteTick -= this.justAteTickChange;
+    } else if( this.justAteTick < 0 ) {
+      this.justAteTick = 0;
+    }
+  };
+
+  g.Snake.prototype.render = function() {
+    // render individual snake tiles
+    var i = this.tiles.length;
+    while( i-- ) {
+      this.tiles[ i ].render( i );
+    }
+  };
+
+})();
+
+/*================================================
+
+Food Entity
+
+================================================*/
+
+(function(){ 'use strict';
+
+  g.Food = function( opt ) {
+    this.parentState = opt.parentState;
+    this.tile = new g.FoodTile({
+      parentState: this.parentState,
+      col: 0,
+      row: 0,
+      x: 0,
+      y: 0,
+      w: opt.parentState.tileWidth - opt.parentState.spacing,
+      h: opt.parentState.tileHeight - opt.parentState.spacing
+    });
+    this.reset();
+    this.eaten = 0;
+    this.birthTick = 1;
+    this.deathTick = 0;
+    this.birthTickChange = 0.025;
+    this.deathTickChange = 0.05;
+  };
+
+  g.Food.prototype.reset = function() {
+    var empty = [];
+    for( var x = 0; x < this.parentState.cols; x++) {
+      for( var y = 0; y < this.parentState.rows; y++) {
+        var tile = this.parentState.grid.get( x, y );
+        if( tile == 'empty' ) {
+          empty.push( { x: x, y: y } );
+        }
+      }
+    }
+    var newTile = empty[ g.util.randInt( 0, empty.length - 1 ) ];
+    this.tile.col = newTile.x;
+    this.tile.row = newTile.y;
+  };
+
+  g.Food.prototype.updateDimensions = function() {
+    this.tile.updateDimensions();
+  };
+
+  g.Food.prototype.update = function() {
+    // update food tile
+    this.tile.update();
+
+    if( this.birthTick > 0 ) {
+      this.birthTick -= this.birthTickChange;
+    } else if( this.birthTick < 0 ) {
+      this.birthTick = 0;
+    }
+
+    // sync data grid of the play state
+    this.parentState.grid.set( this.tile.col, this.tile.row, 'food' );
+  };
+
+  g.Food.prototype.render = function() {
+    this.tile.render();
+  };
+
+})();
+
+/*================================================
+
+Play State
+
+================================================*/
+
+(function(){ 'use strict';
+
+  function StatePlay() {
+    this.name = 'play';
+  }
+
+  StatePlay.prototype.init = function() {
+    this.scoreElem = document.querySelector( '.score' );
+    this.stageElem = document.querySelector( '.stage' );
+    this.dimLong = 28;
+    this.dimShort = 16;
+    this.padding = 0.25;
+    this.boardTiles = new g.Group();
+    this.keys = {};
+    this.foodCreateTimeout = null;
+    this.score = 0;
+    this.scoreElem.innerHTML = this.score;
+    this.time = new g.Time();
+    this.getDimensions();
+    if( this.winWidth < this.winHeight ) {
+      this.rows = this.dimLong;
+      this.cols = this.dimShort;
+    } else {
+      this.rows = this.dimShort;
+      this.cols = this.dimLong;
+    }
+    this.spacing = 1;
+    this.grid = new g.Grid( this.cols, this.rows );
+    this.resize();
+    this.createBoardTiles();
+    this.bindEvents();
+    this.snake = new g.Snake({
+      parentState: this
+    });
+    this.food = new g.Food({
+      parentState: this
+    });
+  };
+
+  StatePlay.prototype.getDimensions = function() {
+    this.winWidth = window.innerWidth;
+    this.winHeight = window.innerHeight;
+    this.activeWidth = this.winWidth - ( this.winWidth * this.padding );
+    this.activeHeight = this.winHeight - ( this.winHeight * this.padding );
+  };
+
+  StatePlay.prototype.resize = function() {
+    var _this = g.currentState();
+
+    _this.getDimensions();
+
+    _this.stageRatio = _this.rows / _this.cols;
+
+    if( _this.activeWidth > _this.activeHeight / _this.stageRatio ) {
+      _this.stageHeight = _this.activeHeight;
+      _this.stageElem.style.height = _this.stageHeight + 'px';
+      _this.stageWidth = Math.floor( _this.stageHeight /_this.stageRatio );
+      _this.stageElem.style.width = _this.stageWidth + 'px';
+    } else {
+      _this.stageWidth = _this.activeWidth;
+      _this.stageElem.style.width = _this.stageWidth + 'px';
+      _this.stageHeight = Math.floor( _this.stageWidth * _this.stageRatio );
+      _this.stageElem.style.height = _this.stageHeight + 'px';
+    }
+
+    _this.tileWidth = ~~( _this.stageWidth / _this.cols );
+    _this.tileHeight = ~~( _this.stageHeight / _this.rows );
+    _this.dimAvg = ( _this.activeWidth + _this.activeHeight ) / 2;
+    _this.spacing = Math.max( 1, ~~( _this.dimAvg * 0.0025 ) );
+
+    _this.stageElem.style.marginTop = ( -_this.stageElem.offsetHeight / 2 ) + _this.headerHeight / 2 + 'px';
+
+    _this.boardTiles.each( 'updateDimensions' );
+    _this.snake !== undefined && _this.snake.updateDimensions();
+    _this.food !== undefined && _this.food.updateDimensions();
+  };
+
+  StatePlay.prototype.createBoardTiles = function() {
+    for( var y = 0; y < this.rows; y++ ) {
+      for( var x = 0; x < this.cols; x++ ) {
+        this.boardTiles.add( new g.BoardTile({
+          parentState: this,
+          parentGroup: this.boardTiles,
+          col: x,
+          row: y,
+          x: x * this.tileWidth,
+          y: y * this.tileHeight,
+          w: this.tileWidth - this.spacing,
+          h: this.tileHeight - this.spacing
+        }));
+      }
+    }
+  };
+
+  StatePlay.prototype.upOn = function() { g.currentState().keys.up = 1; }
+  StatePlay.prototype.downOn = function() { g.currentState().keys.down = 1; }
+  StatePlay.prototype.rightOn = function() { g.currentState().keys.right = 1; }
+  StatePlay.prototype.leftOn = function() { g.currentState().keys.left = 1; }
+  StatePlay.prototype.upOff = function() { g.currentState().keys.up = 0; }
+  StatePlay.prototype.downOff = function() { g.currentState().keys.down = 0; }
+  StatePlay.prototype.rightOff = function() { g.currentState().keys.right = 0; }
+  StatePlay.prototype.leftOff = function() { g.currentState().keys.left = 0; }
+
+  StatePlay.prototype.keydown = function( e ) {
+    e.preventDefault();
+    var e = ( e.keyCode ? e.keyCode : e.which ),
+      _this = g.currentState();
+    if( e === 38 || e === 87 ) { _this.upOn(); }
+    if( e === 39 || e === 68 ) { _this.rightOn(); }
+    if( e === 40 || e === 83 ) { _this.downOn(); }
+    if( e === 37 || e === 65 ) { _this.leftOn(); }
+  };
+
+  StatePlay.prototype.bindEvents = function() {
+    var _this = g.currentState();
+    window.addEventListener( 'keydown', _this.keydown, false );
+    window.addEventListener( 'resize', _this.resize, false );
+  };
+
+  StatePlay.prototype.step = function() {
+    this.boardTiles.each( 'update' );
+    this.boardTiles.each( 'render' );
+    this.snake.update();
+    this.snake.render();
+    this.food.update();
+    this.food.render();
+    this.time.update();
+  };
+
+  StatePlay.prototype.exit = function() {
+    window.removeEventListener( 'keydown', this.keydown, false );
+    window.removeEventListener( 'resize', this.resize, false );
+    this.stageElem.innerHTML = '';
+    this.grid.tiles = null;
+    this.time = null;
+  };
+
+  g.addState( new StatePlay() );
+
+})();
+
+/*================================================
+
+Game
+
+================================================*/
+
+(function(){ 'use strict';
+
+  g.config = {
+    title: 'Snakely',
+    debug: window.location.hash == '#debug' ? 1 : 0,
+    state: 'play'
+  };
+
+  g.setState( g.config.state );
+
+  g.time = new g.Time();
+
+  g.step = function() {
+    requestAnimationFrame( g.step );
+    g.states[ g.state ].step();
+    g.time.update();
+  };
+
+  window.addEventListener( 'load', g.step, false );
+
+})();
